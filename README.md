@@ -1,6 +1,6 @@
 # VPoser Blender addon 
 
-##Installation
+###Installation
 
 - Install [VPoser](hvttps://github.com/nghorbani/human_body_prior) in some venv, then run Blender in this venv (./blender --python-use-system-env)
 - Download trained VPoser from [SMPL-X](https://smpl-x.is.tue.mpg.de/download.php)
