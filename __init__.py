@@ -19,6 +19,18 @@ VP, _ = load_model(DIR_PATH + '/data/V02_05', model_code=VPoser,
                    remove_words_in_model_weights='vp_model.',
                    disable_grad=True)
 
+def check_compatibility(self, armature):
+    if 'smplx_blender_addon' not in sys.modules:
+        self.report({"ERROR"}, "No smplx_blender_addon")
+        return False
+
+    if armature.type != 'ARMATURE':
+        self.report({"ERROR"}, "Current object is not armature")
+        return False
+
+    return True
+
+
 class ObjectVPoserUpdatePose(bpy.types.Operator):
     """Update pose by VPoser"""
     bl_idname = "object.vposer_update_pose"
@@ -26,18 +38,14 @@ class ObjectVPoserUpdatePose(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        if 'smplx_blender_addon' not in sys.modules:
-            self.report({"ERROR"}, "No smplx_blender_addon")
+        armature = context.object
+
+        if not check_compatibility(self, armature):
             return {"CANCELLED"}
 
         smplx = sys.modules['smplx_blender_addon']
         body_bones_names = \
             smplx.SMPLX_JOINT_NAMES[1 : smplx.NUM_SMPLX_BODYJOINTS + 1]
-        armature = context.object
-
-        if armature.type != 'ARMATURE':
-            self.report({"ERROR"}, "Current object is not armature")
-            return {"CANCELLED"}
 
         body_pose = []
 
@@ -65,18 +73,14 @@ class ObjectVPoserGeneratePose(bpy.types.Operator):
 
 
     def execute(self, context):
-        if 'smplx_blender_addon' not in sys.modules:
-            self.report({"ERROR"}, "No smplx_blender_addon")
+        armature = context.object
+
+        if not check_compatibility(self, armature):
             return {"CANCELLED"}
 
         smplx = sys.modules['smplx_blender_addon']
         body_bones_names = \
             smplx.SMPLX_JOINT_NAMES[1 : smplx.NUM_SMPLX_BODYJOINTS + 1]
-        armature = context.object
-
-        if armature.type != 'ARMATURE':
-            self.report({"ERROR"}, "Current object is not armature")
-            return {"CANCELLED"}
 
 
         body_poZ_sample = \
@@ -100,14 +104,9 @@ class ObjectVPoserIK(bpy.types.Operator):
 
 
     def execute(self, context):
-        if 'smplx_blender_addon' not in sys.modules:
-            self.report({"ERROR"}, "No smplx_blender_addon")
-            return {"CANCELLED"}
-
         armature = context.object
 
-        if armature.type != 'ARMATURE':
-            self.report({"ERROR"}, "Current object is not armature")
+        if not check_compatibility(self, armature):
             return {"CANCELLED"}
 
         smplx = sys.modules['smplx_blender_addon']
