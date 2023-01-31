@@ -30,6 +30,19 @@ def check_compatibility(self, armature):
 
     return True
 
+def get_body_parameters(smplx, armature):
+    body_bones_names = \
+        smplx.SMPLX_JOINT_NAMES[1 : smplx.NUM_SMPLX_BODYJOINTS + 1]
+
+    body_pose = []
+
+    for bone_name in body_bones_names:
+        body_pose.append(smplx.rodrigues_from_pose(armature, bone_name))
+
+    body_pose = torch.Tensor(body_pose).reshape((1,-1)).type(torch.float)
+
+    return (body_bones_names, body_pose)
+
 
 class ObjectVPoserUpdatePose(bpy.types.Operator):
     """Update pose by VPoser"""
@@ -44,15 +57,8 @@ class ObjectVPoserUpdatePose(bpy.types.Operator):
             return {"CANCELLED"}
 
         smplx = sys.modules['smplx_blender_addon']
-        body_bones_names = \
-            smplx.SMPLX_JOINT_NAMES[1 : smplx.NUM_SMPLX_BODYJOINTS + 1]
+        body_bones_names, body_pose = get_body_parameters(smplx, armature)
 
-        body_pose = []
-
-        for bone_name in body_bones_names:
-            body_pose.append(smplx.rodrigues_from_pose(armature, bone_name))
-
-        body_pose = torch.Tensor(body_pose).reshape((1,-1)).type(torch.float)
         body_poZ = VP.encode(body_pose).mean
         body_pose_rec = \
             VP.decode(body_poZ)['pose_body'].contiguous().view(-1, 63)
@@ -79,9 +85,7 @@ class ObjectVPoserGeneratePose(bpy.types.Operator):
             return {"CANCELLED"}
 
         smplx = sys.modules['smplx_blender_addon']
-        body_bones_names = \
-            smplx.SMPLX_JOINT_NAMES[1 : smplx.NUM_SMPLX_BODYJOINTS + 1]
-
+        body_bones_names, _ = get_body_parameters(smplx, armature)
 
         body_poZ_sample = \
             torch.from_numpy(np.random.randn(1,32).astype(np.float32))
@@ -110,17 +114,9 @@ class ObjectVPoserIK(bpy.types.Operator):
             return {"CANCELLED"}
 
         smplx = sys.modules['smplx_blender_addon']
-        body_bones_names = \
-            smplx.SMPLX_JOINT_NAMES[1 : smplx.NUM_SMPLX_BODYJOINTS + 1]
+        body_bones_names, body_pose = get_body_parameters(smplx, armature)
         root_name = smplx.SMPLX_JOINT_NAMES[0]
-
-        body_pose = []
         root_orient = smplx.rodrigues_from_pose(armature, root_name)
-
-        for bone_name in body_bones_names:
-            body_pose.append(smplx.rodrigues_from_pose(armature, bone_name))
-
-        body_pose = torch.Tensor(body_pose).reshape((1,-1)).type(torch.float)
         root_orient = torch.Tensor(root_orient).reshape((1,-1)).type(torch.float)
         
         body_pose_rec = body_pose
