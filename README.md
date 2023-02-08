@@ -7,3 +7,8 @@
 - Download SMPLX models from [SMPL-X](https://smpl-x.is.tue.mpg.de/download.php)
 - Clone this repo, put trained VPoser in data/V02_05, put SMPLX models in data/models/smplx, zip repo and install it in Blender
 - Install [SMPL-X for Blender](https://gitlab.tuebingen.mpg.de/jtesch/smplx_blender_addon/-/tree/master)
+
+## Bugs
+
+- Several models produce ik_bone_ref for each ik bone addition
+- "Update pose shape" do not works after ik bone addition (works only if mesh selected)
